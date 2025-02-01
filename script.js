@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Отображение реферальной ссылки
     function displayReferralLink() {
         const referralCode = referrals.referralCode;
-        const referralUrl = `${window.location.origin}${window.location.pathname}?ref=${referralCode}`;
+        const referralUrl = `https://t.me/Kalendario_bot?start=${referralCode}`; // Ссылка на бота с реферальным кодом
         referralLinkInput.value = referralUrl;
     }
 
@@ -125,8 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let day = 1; day <= daysInMonth; day++) {
             const isConfirmed = progress.confirmedDays.includes(day);
+            const isCurrentDay = day === currentDay; // Проверяем, является ли день текущим
             calendarHTML += `
-                <div class="day ${isConfirmed ? 'confirmed' : ''}" data-day="${day}">
+                <div class="day ${isConfirmed ? 'confirmed' : ''} ${isCurrentDay ? 'current-day' : ''}" data-day="${day}">
                     ${day}
                     ${isConfirmed ? '✅' : ''}
                 </div>`;
@@ -190,57 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(achievementsKey, JSON.stringify(achievements));
         updateAchievements();
     }
-	
-	// Генерация календаря
-	function generateCalendar() {
-		const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-		let calendarHTML = '';
-
-		for (let day = 1; day <= daysInMonth; day++) {
-			const isConfirmed = progress.confirmedDays.includes(day);
-			const isCurrentDay = day === currentDay; // Проверяем, является ли день текущим
-			calendarHTML += `
-				<div class="day ${isConfirmed ? 'confirmed' : ''} ${isCurrentDay ? 'current-day' : ''}" data-day="${day}">
-					${day}
-					${isConfirmed ? '✅' : ''}
-				</div>`;
-		}
-
-		calendar.innerHTML = calendarHTML;
-
-		// Обработчик нажатия на день
-		const days = document.querySelectorAll('.day');
-		days.forEach(day => {
-			day.addEventListener('click', () => {
-				const selectedDayNumber = parseInt(day.getAttribute('data-day'), 10);
-
-				if (selectedDayNumber === currentDay) {
-					if (!progress.confirmedDays.includes(selectedDayNumber)) {
-						progress.confirmedDays.push(selectedDayNumber);
-						progress.lastConfirmedDay = selectedDayNumber;
-						localStorage.setItem(progressKey, JSON.stringify(progress));
-
-						// Награда за подтверждение
-						coins += 10;
-						localStorage.setItem(coinsKey, coins.toString());
-						updateCoinsDisplay();
-
-						// Проверка достижений
-						checkAchievements();
-
-						tg.showAlert('День подтвержден! Вы получили 10 монет.');
-
-						day.classList.add('confirmed');
-						day.innerHTML = `${selectedDayNumber} ✅`;
-					} else {
-						tg.showAlert('Этот день уже подтвержден!');
-					}
-				} else {
-					tg.showAlert('Вы выбрали неверный день!');
-				}
-			});
-		});
-	}
 
     // Инициализация
     generateCalendar();
