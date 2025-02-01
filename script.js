@@ -14,7 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Инициализация Telegram Web App
     const tg = window.Telegram.WebApp;
+
+    // Ожидаем полной инициализации SDK
+    tg.ready();
+
+    // Включаем полноэкранный режим
     tg.expand();
+
+    tg.requestFullscreen();		// Максимально большой экран
+
+    tg.disableVerticalSwipes();
+
 
     // Получаем данные пользователя из Telegram
     const user = tg.initDataUnsafe.user;
