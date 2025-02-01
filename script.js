@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const calendar = document.getElementById('calendar');
-    const confirmButton = document.getElementById('confirmButton');
     const message = document.getElementById('message');
     const friendsButton = document.getElementById('friendsButton');
     const referralMenu = document.getElementById('referralMenu');
@@ -8,16 +7,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const referralLinkInput = document.getElementById('referralLink');
     const copyLinkButton = document.getElementById('copyLinkButton');
     const referralCount = document.getElementById('referralCount');
-    let selectedDay = null;
+    const referralCountModal = document.getElementById('referralCountModal');
+    const coinsCount = document.getElementById('coinsCount');
+    const confirmedDaysCount = document.getElementById('confirmedDaysCount');
+    const achievementsList = document.getElementById('achievementsList');
 
     // Инициализация Telegram Web App
     const tg = window.Telegram.WebApp;
-    tg.expand(); // Раскрываем приложение на весь экран
+    tg.expand();
 
     // Получаем данные пользователя из Telegram
     const user = tg.initDataUnsafe.user;
     const userId = user?.id.toString() || 'default_user';
-    const userName = user?.first_name || 'Пользователь';
 
     // Получаем текущую дату
     const today = new Date();
@@ -28,18 +29,41 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ключи для LocalStorage
     const progressKey = `progress_${userId}_${currentYear}_${currentMonth}`;
     const referralKey = `referrals_${userId}`;
+    const coinsKey = `coins_${userId}`;
+    const achievementsKey = `achievements_${userId}`;
 
-    // Загружаем прогресс из LocalStorage
+    // Загружаем данные из LocalStorage
     let progress = JSON.parse(localStorage.getItem(progressKey)) || {
         confirmedDays: [],
         lastConfirmedDay: null
     };
 
-    // Загружаем реферальные данные из LocalStorage
     let referrals = JSON.parse(localStorage.getItem(referralKey)) || {
         count: 0,
         referralCode: generateReferralCode(userId)
     };
+
+    let coins = parseInt(localStorage.getItem(coinsKey)) || 0;
+    let achievements = JSON.parse(localStorage.getItem(achievementsKey)) || [];
+
+    // Обновляем отображение монет
+    function updateCoinsDisplay() {
+        coinsCount.textContent = coins;
+    }
+
+    // Обновляем отображение статистики
+    function updateStats() {
+        confirmedDaysCount.textContent = progress.confirmedDays.length;
+        referralCount.textContent = referrals.count;
+        referralCountModal.textContent = referrals.count;
+    }
+
+    // Обновляем отображение достижений
+    function updateAchievements() {
+        achievementsList.innerHTML = achievements.map(achievement => `
+            <li>${achievement}</li>
+        `).join('');
+    }
 
     // Генерация реферального кода
     function generateReferralCode(userId) {
@@ -51,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const referralCode = referrals.referralCode;
         const referralUrl = `${window.location.origin}${window.location.pathname}?ref=${referralCode}`;
         referralLinkInput.value = referralUrl;
-        referralCount.textContent = referrals.count;
     }
 
     // Копирование реферальной ссылки
@@ -77,16 +100,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const refCode = urlParams.get('ref');
 
         if (refCode && refCode !== referrals.referralCode) {
-            // Находим пользователя, который пригласил
             const referrerUserId = refCode.split('_')[1];
             const referrerKey = `referrals_${referrerUserId}`;
             const referrerData = JSON.parse(localStorage.getItem(referrerKey)) || { count: 0 };
 
-            // Обновляем счетчик приглашений
+            // Обновляем счетчик приглашений и монеты
             referrerData.count += 1;
             localStorage.setItem(referrerKey, JSON.stringify(referrerData));
 
-            // Показываем сообщение в Telegram
+            // Начисляем монеты
+            const referrerCoinsKey = `coins_${referrerUserId}`;
+            let referrerCoins = parseInt(localStorage.getItem(referrerCoinsKey)) || 0;
+            referrerCoins += 1;
+            localStorage.setItem(referrerCoinsKey, referrerCoins.toString());
+
             tg.showAlert(`Вы были приглашены пользователем с ID: ${referrerUserId}`);
         }
     }
@@ -107,49 +134,119 @@ document.addEventListener('DOMContentLoaded', () => {
 
         calendar.innerHTML = calendarHTML;
 
-        // Добавляем обработчик событий для выбора дня
+        // Обработчик нажатия на день
         const days = document.querySelectorAll('.day');
         days.forEach(day => {
             day.addEventListener('click', () => {
-                if (selectedDay) {
-                    selectedDay.classList.remove('selected');
+                const selectedDayNumber = parseInt(day.getAttribute('data-day'), 10);
+
+                if (selectedDayNumber === currentDay) {
+                    if (!progress.confirmedDays.includes(selectedDayNumber)) {
+                        progress.confirmedDays.push(selectedDayNumber);
+                        progress.lastConfirmedDay = selectedDayNumber;
+                        localStorage.setItem(progressKey, JSON.stringify(progress));
+
+                        // Награда за подтверждение
+                        coins += 10;
+                        localStorage.setItem(coinsKey, coins.toString());
+                        updateCoinsDisplay();
+
+                        // Проверка достижений
+                        checkAchievements();
+
+                        tg.showAlert('День подтвержден! Вы получили 10 монет.');
+
+                        day.classList.add('confirmed');
+                        day.innerHTML = `${selectedDayNumber} ✅`;
+                    } else {
+                        tg.showAlert('Этот день уже подтвержден!');
+                    }
+                } else {
+                    tg.showAlert('Вы выбрали неверный день!');
                 }
-                selectedDay = day;
-                day.classList.add('selected');
-                confirmButton.disabled = false;
             });
         });
     }
 
-    // Обработчик подтверждения дня
-    confirmButton.addEventListener('click', () => {
-        if (selectedDay) {
-            const selectedDayNumber = parseInt(selectedDay.getAttribute('data-day'), 10);
+    // Проверка достижений
+    function checkAchievements() {
+        const confirmedDays = progress.confirmedDays.length;
 
-            // Проверяем, что выбранный день — сегодня
-            if (selectedDayNumber === currentDay) {
-                // Проверяем, что день еще не подтвержден
-                if (!progress.confirmedDays.includes(selectedDayNumber)) {
-                    progress.confirmedDays.push(selectedDayNumber);
-                    progress.lastConfirmedDay = selectedDayNumber;
-                    localStorage.setItem(progressKey, JSON.stringify(progress));
-
-                    tg.showAlert('День подтвержден!');
-
-                    // Обновляем календарь
-                    selectedDay.classList.add('confirmed');
-                    selectedDay.innerHTML = `${selectedDayNumber} ✅`;
-                } else {
-                    tg.showAlert('Этот день уже подтвержден!');
-                }
-            } else {
-                tg.showAlert('Вы выбрали неверный день!');
-            }
+        if (confirmedDays >= 1 && !achievements.includes('Новичок')) {
+            achievements.push('Новичок');
+            tg.showAlert('Достижение разблокировано: Новичок!');
         }
-    });
+
+        if (confirmedDays >= 7 && !achievements.includes('Стрикер')) {
+            achievements.push('Стрикер');
+            tg.showAlert('Достижение разблокировано: Стрикер!');
+        }
+
+        if (referrals.count >= 1 && !achievements.includes('Социальный магнат')) {
+            achievements.push('Социальный магнат');
+            tg.showAlert('Достижение разблокировано: Социальный магнат!');
+        }
+
+        localStorage.setItem(achievementsKey, JSON.stringify(achievements));
+        updateAchievements();
+    }
+	
+	// Генерация календаря
+	function generateCalendar() {
+		const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+		let calendarHTML = '';
+
+		for (let day = 1; day <= daysInMonth; day++) {
+			const isConfirmed = progress.confirmedDays.includes(day);
+			const isCurrentDay = day === currentDay; // Проверяем, является ли день текущим
+			calendarHTML += `
+				<div class="day ${isConfirmed ? 'confirmed' : ''} ${isCurrentDay ? 'current-day' : ''}" data-day="${day}">
+					${day}
+					${isConfirmed ? '✅' : ''}
+				</div>`;
+		}
+
+		calendar.innerHTML = calendarHTML;
+
+		// Обработчик нажатия на день
+		const days = document.querySelectorAll('.day');
+		days.forEach(day => {
+			day.addEventListener('click', () => {
+				const selectedDayNumber = parseInt(day.getAttribute('data-day'), 10);
+
+				if (selectedDayNumber === currentDay) {
+					if (!progress.confirmedDays.includes(selectedDayNumber)) {
+						progress.confirmedDays.push(selectedDayNumber);
+						progress.lastConfirmedDay = selectedDayNumber;
+						localStorage.setItem(progressKey, JSON.stringify(progress));
+
+						// Награда за подтверждение
+						coins += 10;
+						localStorage.setItem(coinsKey, coins.toString());
+						updateCoinsDisplay();
+
+						// Проверка достижений
+						checkAchievements();
+
+						tg.showAlert('День подтвержден! Вы получили 10 монет.');
+
+						day.classList.add('confirmed');
+						day.innerHTML = `${selectedDayNumber} ✅`;
+					} else {
+						tg.showAlert('Этот день уже подтвержден!');
+					}
+				} else {
+					tg.showAlert('Вы выбрали неверный день!');
+				}
+			});
+		});
+	}
 
     // Инициализация
     generateCalendar();
     displayReferralLink();
     checkReferralCode();
+    updateCoinsDisplay();
+    updateStats();
+    updateAchievements();
 });

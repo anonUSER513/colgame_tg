@@ -11,13 +11,28 @@
     <div class="container">
         <header>
             <h1>Ежедневная игра</h1>
+            <div id="coinsDisplay">
+                <img src="coin.png" alt="Монеты" class="coin-icon"> <span id="coinsCount">0</span>
+            </div>
             <button id="friendsButton">Друзья</button>
         </header>
 
         <main>
             <div id="calendar"></div>
-            <button id="confirmButton" disabled>Подтвердить день</button>
             <p id="message"></p>
+
+            <!-- Статистика -->
+            <div id="stats">
+                <h2>Статистика</h2>
+                <p>Подтверждено дней: <span id="confirmedDaysCount">0</span></p>
+                <p>Приглашено друзей: <span id="referralCount">0</span></p>
+            </div>
+
+            <!-- Достижения -->
+            <div id="achievements">
+                <h2>Достижения</h2>
+                <ul id="achievementsList"></ul>
+            </div>
         </main>
 
         <!-- Меню реферальной системы -->
@@ -28,7 +43,7 @@
                 <p>Ваша реферальная ссылка:</p>
                 <input type="text" id="referralLink" readonly>
                 <button id="copyLinkButton">Скопировать ссылку</button>
-                <p>Приглашено друзей: <span id="referralCount">0</span></p>
+                <p>Приглашено друзей: <span id="referralCountModal">0</span></p>
             </div>
         </div>
     </div>

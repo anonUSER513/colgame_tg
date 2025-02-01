@@ -1,18 +1,18 @@
 /* Основные стили */
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #121212; /* Тёмный фон */
+    background-color: #121212;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    color: #ffffff; /* Белый текст */
+    color: #ffffff;
 }
 
 .container {
-    background-color: #1e1e1e; /* Тёмный контейнер */
+    background-color: #1e1e1e;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     width: 100%;
@@ -30,7 +30,18 @@ header {
 
 h1 {
     font-size: 24px;
-    color: #ffffff; /* Белый текст */
+    color: #ffffff;
+}
+
+#coinsDisplay {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.coin-icon {
+    width: 20px;
+    height: 20px;
 }
 
 #friendsButton {
@@ -57,20 +68,14 @@ h1 {
 
 .day {
     padding: 15px;
-    border: 1px solid #333; /* Тёмная граница */
+    border: 1px solid #333;
     border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    color: #ffffff; /* Белый текст */
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .day:hover {
-    background-color: #333; /* Тёмный фон при наведении */
-}
-
-.day.selected {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #333;
 }
 
 .day.confirmed {
@@ -78,22 +83,8 @@ h1 {
     color: white;
 }
 
-/* Кнопка подтверждения */
-#confirmButton {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-#confirmButton:disabled {
-    background-color: #666; /* Серый цвет для неактивной кнопки */
-    cursor: not-allowed;
+.day:active {
+    transform: scale(0.95); /* Анимация при нажатии */
 }
 
 /* Сообщения */
@@ -101,6 +92,42 @@ h1 {
     font-size: 14px;
     color: #4CAF50;
     margin-top: 10px;
+}
+
+/* Статистика */
+#stats {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #2c2c2c;
+    border-radius: 10px;
+}
+
+#stats h2 {
+    margin-top: 0;
+}
+
+/* Достижения */
+#achievements {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #2c2c2c;
+    border-radius: 10px;
+}
+
+#achievements h2 {
+    margin-top: 0;
+}
+
+#achievementsList {
+    list-style-type: none;
+    padding: 0;
+}
+
+#achievementsList li {
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #333;
+    border-radius: 5px;
 }
 
 /* Модальное окно */
@@ -111,19 +138,19 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Тёмный фон */
+    background-color: rgba(0, 0, 0, 0.7);
     justify-content: center;
     align-items: center;
 }
 
 .modal-content {
-    background-color: #2c2c2c; /* Тёмный фон модального окна */
+    background-color: #2c2c2c;
     padding: 20px;
     border-radius: 15px;
     width: 90%;
     max-width: 400px;
     position: relative;
-    color: #ffffff; /* Белый текст */
+    color: #ffffff;
 }
 
 .close {
@@ -132,11 +159,11 @@ h1 {
     right: 15px;
     font-size: 24px;
     cursor: pointer;
-    color: #ffffff; /* Белый текст */
+    color: #ffffff;
 }
 
 .close:hover {
-    color: #ccc; /* Светло-серый при наведении */
+    color: #ccc;
 }
 
 /* Реферальная система */
@@ -144,11 +171,11 @@ h1 {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    border: 1px solid #444; /* Тёмная граница */
+    border: 1px solid #444;
     border-radius: 10px;
     font-size: 14px;
-    background-color: #1e1e1e; /* Тёмный фон */
-    color: #ffffff; /* Белый текст */
+    background-color: #1e1e1e;
+    color: #ffffff;
 }
 
 #copyLinkButton {
@@ -165,4 +192,11 @@ h1 {
 
 #copyLinkButton:hover {
     background-color: #45a049;
+}
+/* Стиль для текущего дня */
+.day.current-day {
+    border: 2px solid #4CAF50; /* Зелёная рамка */
+    background-color: #333; /* Тёмный фон */
+    color: #ffffff; /* Белый текст */
+    font-weight: bold; /* Жирный шрифт */
 }
